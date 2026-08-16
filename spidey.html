@@ -4,51 +4,120 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Multiverse Defense: Phoenix Rising</title>
+    <title>Multiverse Defence: Web Rhythm</title>
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
+            user-select: none;
         }
 
         body {
             background-color: #030303;
             height: 100vh;
             display: flex;
-            flex-direction: column;
             justify-content: center;
             align-items: center;
             overflow: hidden;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            user-select: none;
         }
 
-        /* Main Page Credits Banner - Center Middle */
-        #mainCredits {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            z-index: 30;
+        #game-container {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            max-width: 1500px;
+            max-height: 950px;
+            background: #08080c;
+            box-shadow: 0 0 40px rgba(220, 20, 60, 0.4);
+            overflow: hidden;
             display: flex;
             flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            text-align: center;
-            width: 90%;
-            pointer-events: none;
-            transition: opacity 0.5s ease;
         }
 
-        .game-main-title {
+        canvas {
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+
+        .bg-ambience {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at 50% 30%, rgba(220, 20, 60, 0.25) 0%, rgba(0, 217, 255, 0.1) 50%, rgba(0, 0, 0, 0) 80%);
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .mask-hud {
+            position: absolute;
+            top: 12px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 5;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 20px;
+            pointer-events: none;
+        }
+
+        .eye {
+            width: 150px;
+            height: 150px;
+            filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.6));
+            transition: transform 0.1s ease;
+        }
+
+        .left-eye {
+            transform: rotate(90deg) scale(0.8);
+        }
+
+        .right-eye {
+            transform: rotate(-90deg) scaleX(-1) scale(0.8);
+        }
+
+        .eye-frame {
+            fill: #111111;
+            stroke: #dc143c;
+            stroke-width: 4;
+        }
+
+        .eye-lens {
+            fill: #ffffff;
+        }
+
+        .overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(3, 3, 3, 0.92);
+            backdrop-filter: blur(8px);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 40;
+            transition: opacity 0.4s ease;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        .game-title {
             color: #ffffff;
-            font-size: 5rem;
+            font-size: 5.7rem;
             font-weight: 900;
             letter-spacing: 5px;
             text-transform: uppercase;
-            text-shadow: 0 0 30px rgba(220, 20, 60, 0.9), 0 0 15px rgba(0, 0, 0, 0.9);
-            line-height: 1.5;
+            text-shadow: 0 0 25px rgba(220, 20, 60, 0.9);
+            text-align: center;
+            margin-bottom: 5px;
         }
 
         .game-author {
@@ -57,547 +126,23 @@
             font-weight: 700;
             letter-spacing: 3px;
             text-transform: uppercase;
-            margin-top: 10px;
-            text-shadow: 0 0 18px rgba(0, 217, 255, 0.8), 0 0 5px #000;
+            margin-bottom: 25px;
         }
 
-        /* Ambient Background Glow */
-        .bg-ambience {
-            position: absolute;
-            width: 100vw;
-            height: 100vh;
-            background: radial-gradient(circle at 50% 50%, rgba(255, 20, 147, 0.15) 0%, rgba(255, 69, 0, 0.08) 40%, rgba(0, 0, 0, 0) 70%);
-            z-index: 1;
-            pointer-events: none;
-        }
-
-        /* Damage Red Flash Overlay */
-        #damageOverlay {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100vw;
-            height: 100vh;
-            background: rgba(255, 0, 0, 0.35);
-            z-index: 30;
-            pointer-events: none;
-            opacity: 0;
-            transition: opacity 0.15s ease-out;
-        }
-
-        /* Ability Shockwave Effect */
-        #abilityShockwave {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            width: 10px;
-            height: 10px;
-            border-radius: 50%;
-            background: radial-gradient(circle, rgba(255, 255, 255, 0.9) 0%, rgba(0, 217, 255, 0.6) 40%, rgba(220, 20, 60, 0) 80%);
-            box-shadow: 0 0 50px rgba(0, 217, 255, 0.9);
-            transform: translate(-50%, -50%) scale(0);
-            z-index: 35;
-            pointer-events: none;
-            opacity: 0;
-        }
-
-        #abilityShockwave.active {
-            animation: shockwavePulse 0.6s ease-out forwards;
-        }
-
-        @keyframes shockwavePulse {
-            0% {
-                transform: translate(-50%, -50%) scale(0);
-                opacity: 1;
-            }
-
-            100% {
-                transform: translate(-50%, -50%) scale(250);
-                opacity: 0;
-            }
-        }
-
-        /* Intro Message Overlay */
-        #introOverlay {
-            position: absolute;
-            z-index: 40;
-            color: #ffffff;
-            font-size: 2.2rem;
-            font-weight: 800;
-            text-transform: uppercase;
-            letter-spacing: 4px;
-            text-shadow: 0 0 20px rgba(220, 20, 60, 0.9), 0 0 10px rgba(0, 0, 0, 0.9);
-            opacity: 0;
-            transform: scale(0.8);
-            transition: all 0.5s ease-in-out;
-            pointer-events: none;
-            text-align: center;
-            background: rgba(0, 0, 0, 0.85);
-            padding: 20px 40px;
-            border-radius: 20px;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-        }
-
-        #introOverlay.show {
-            opacity: 1;
-            transform: scale(1);
-        }
-
-        /* Game Over / Victory Overlay */
-        #endOverlay {
-            position: absolute;
-            z-index: 45;
+        .menu-box {
+            background-color: rgba(0, 0, 0, .5);
+            border-radius: 16px;
+            padding: 25px;
+            width: 85%;
+            max-width: 380px;
             display: flex;
             flex-direction: column;
-            align-items: center;
-            justify-content: center;
             gap: 15px;
-            opacity: 0;
-            pointer-events: none;
-            transition: all 0.5s ease;
-            background: rgba(5, 5, 5, 0.9);
-            padding: 40px 60px;
-            border-radius: 24px;
-            border: 2px solid rgba(255, 255, 255, 0.2);
-            box-shadow: 0 0 40px rgba(0, 0, 0, 0.9), 0 0 20px rgba(220, 20, 60, 0.3);
-            backdrop-filter: blur(8px);
-        }
-
-        #endOverlay.show {
-            opacity: 1;
-        }
-
-        .end-title {
-            font-size: 3rem;
-            font-weight: 900;
-            text-transform: uppercase;
-            letter-spacing: 4px;
-            text-shadow: 0 0 20px rgba(0, 0, 0, 1), 0 0 10px rgba(0, 0, 0, 0.9);
-        }
-
-        .end-title.dead {
-            color: #ff2a2a;
-            text-shadow: 0 0 25px rgba(255, 0, 0, 0.8), 0 0 10px #000;
-        }
-
-        .end-title.victory {
-            color: #00ff88;
-            text-shadow: 0 0 25px rgba(0, 255, 136, 0.8), 0 0 10px #000;
-        }
-
-        .end-rating {
-            font-size: 1.8rem;
-            color: #ffffff;
-            letter-spacing: 2px;
             text-align: center;
-            text-shadow: 0 2px 8px rgba(0, 0, 0, 1);
         }
 
-        /* Health Bar & HUD Container */
-        .ui-container {
-            position: absolute;
-            top: 30px;
-            z-index: 25;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 6px;
-            opacity: 0;
-            transition: opacity 0.5s ease;
-        }
 
-        .ui-container.active {
-            opacity: 1;
-        }
-
-        .hud-info {
-            display: flex;
-            justify-content: space-between;
-            width: 280px;
-            color: #ffffff;
-            font-size: 0.8rem;
-            letter-spacing: 1.5px;
-            text-transform: uppercase;
-            font-weight: 700;
-            text-shadow: 0 0 8px rgba(220, 20, 60, 0.8), 0 0 4px #000;
-        }
-
-        .hud-level {
-            color: #ffcc00;
-        }
-
-        .health-bar-border {
-            width: 280px;
-            height: 18px;
-            background: rgba(15, 15, 15, 0.85);
-            border: 2px solid rgba(220, 20, 60, 0.8);
-            border-radius: 12px;
-            padding: 2px;
-            box-shadow: 0 0 15px rgba(220, 20, 60, 0.4);
-        }
-
-        .health-bar-fill {
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, #dc143c 0%, #ff4d4d 100%);
-            border-radius: 8px;
-            transition: width 0.3s ease-out;
-            box-shadow: 0 0 10px rgba(255, 77, 77, 0.8);
-        }
-
-        /* Boss Health HUD (Level 5) */
-        #bossUi {
-            position: absolute;
-            top: 95px;
-            z-index: 25;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 4px;
-            opacity: 0;
-            transition: opacity 0.5s ease;
-        }
-
-        #bossUi.active {
-            opacity: 1;
-        }
-
-        .boss-name {
-            color: #ff69b4;
-            font-size: 0.9rem;
-            font-weight: 900;
-            letter-spacing: 2px;
-            text-transform: uppercase;
-            text-shadow: 0 0 10px rgba(255, 105, 180, 0.8);
-        }
-
-        .boss-bar-border {
-            width: 380px;
-            height: 16px;
-            background: rgba(15, 15, 15, 0.85);
-            border: 2px solid #ff69b4;
-            border-radius: 12px;
-            padding: 2px;
-            box-shadow: 0 0 15px rgba(255, 105, 180, 0.4);
-        }
-
-        .boss-bar-fill {
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, #ff1493 0%, #ff4500 100%);
-            border-radius: 8px;
-            transition: width 0.2s ease-out;
-        }
-
-        /* Ability Ready Prompt */
-        #abilityPrompt {
-            color: #00d9ff;
-            font-size: 0.75rem;
-            font-weight: 800;
-            letter-spacing: 1.5px;
-            text-transform: uppercase;
-            text-shadow: 0 0 10px rgba(0, 217, 255, 0.9);
-            opacity: 0;
-            transition: opacity 0.3s ease;
-            animation: pulseGlow 0.8s infinite alternate;
-        }
-
-        #abilityPrompt.ready {
-            opacity: 1;
-        }
-
-        @keyframes pulseGlow {
-            from {
-                transform: scale(0.95);
-                opacity: 0.7;
-            }
-
-            to {
-                transform: scale(1.05);
-                opacity: 1;
-            }
-        }
-
-        /* Canvas */
-        #webCanvas {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100vw;
-            height: 100vh;
-            z-index: 15;
-            pointer-events: none;
-        }
-
-        /* Villains Layer */
-        #villainsContainer {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100vw;
-            height: 100vh;
-            z-index: 5;
-            pointer-events: none;
-            overflow: hidden;
-        }
-
-        .villain {
-            position: absolute;
-            font-size: 2.6rem;
-            padding: 8px 12px;
-            background: rgba(10, 10, 10, 0.85);
-            border: 2px solid rgba(220, 20, 60, 0.8);
-            border-radius: 50%;
-            box-shadow: 0 0 20px rgba(220, 20, 60, 0.7), inset 0 0 10px rgba(255, 0, 0, 0.5);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            pointer-events: auto;
-            cursor: crosshair;
-            transition: transform 0.2s ease, opacity 0.3s ease;
-            animation: attackCenter var(--animSpeed, 5s) linear forwards;
-        }
-
-        .villain-label {
-            position: absolute;
-            bottom: -18px;
-            font-size: 0.65rem;
-            color: #ff3333;
-            letter-spacing: 1px;
-            text-transform: uppercase;
-            font-weight: bold;
-            white-space: nowrap;
-            text-shadow: 0 0 5px #000;
-        }
-
-        @keyframes attackCenter {
-            0% {
-                transform: translate(0, 0) scale(0.6);
-                opacity: 0;
-            }
-
-            15% {
-                opacity: 1;
-            }
-
-            90% {
-                opacity: 1;
-                transform: translate(calc(50vw - var(--startX) - 30px), calc(50vh - var(--startY) - 30px)) scale(1.1);
-            }
-
-            100% {
-                opacity: 0;
-                transform: translate(calc(50vw - var(--startX) - 30px), calc(50vh - var(--startY) - 30px)) scale(1.4);
-            }
-        }
-
-        /* Level 5 Boss Container: Jean Grey */
-        #bossContainer {
-            position: absolute;
-            top: 22vh;
-            left: 50%;
-            transform: translateX(-50%);
-            z-index: 12;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            opacity: 0;
-            pointer-events: none;
-            transition: opacity 1s ease;
-        }
-
-        #bossContainer.active {
-            opacity: 1;
-            pointer-events: auto;
-        }
-
-        /* Pink Skin Face */
-        .jean-grey-face {
-            width: 170px;
-            height: 170px;
-            border-radius: 50%;
-            background: radial-gradient(circle at 40% 40%, #ffb6c1 0%, #ff69b4 65%, #db7093 100%);
-            box-shadow: 0 0 50px rgba(255, 105, 180, 0.9), 0 0 90px rgba(255, 69, 0, 0.7);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            position: relative;
-            animation: bossHover 3s ease-in-out infinite alternate;
-            cursor: crosshair;
-        }
-
-        /* Ginger Hair Styling */
-        .jean-hair {
-            position: absolute;
-            top: -45px;
-            width: 250px;
-            height: 260px;
-            background: radial-gradient(ellipse at top, #ff4500 0%, #d2691e 60%, #8b0000 100%);
-            border-radius: 50% 50% 25% 25%;
-            z-index: -1;
-            box-shadow: 0 0 35px rgba(255, 69, 0, 0.8);
-        }
-
-        .jean-hair-strands {
-            position: absolute;
-            top: -20px;
-            width: 230px;
-            height: 180px;
-            border-top: 25px solid #ff4500;
-            border-radius: 50%;
-            z-index: 2;
-            pointer-events: none;
-        }
-
-        @keyframes bossHover {
-            0% {
-                transform: translateY(0px) scale(1);
-            }
-
-            100% {
-                transform: translateY(20px) scale(1.05);
-            }
-        }
-
-        .jean-eyes {
-            display: flex;
-            gap: 35px;
-            z-index: 3;
-        }
-
-        .jean-eye {
-            width: 26px;
-            height: 12px;
-            background: #ffffff;
-            box-shadow: 0 0 15px #ffffff, 0 0 25px #ff1493;
-            border-radius: 50%;
-            animation: eyeGlow 1s infinite alternate;
-        }
-
-        @keyframes eyeGlow {
-            from {
-                box-shadow: 0 0 10px #ffffff, 0 0 20px #ff1493;
-            }
-
-            to {
-                box-shadow: 0 0 25px #ffffff, 0 0 40px #ff4500;
-            }
-        }
-
-        /* Spider Player Character */
-        #spiderPlayer {
-            position: absolute;
-            width: 50px;
-            height: 50px;
-            font-size: 2.5rem;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 20;
-            pointer-events: none;
-            opacity: 0;
-            transition: opacity 0.5s ease;
-            filter: drop-shadow(0 0 10px rgba(0, 217, 255, 0.8));
-        }
-
-        #spiderPlayer.active {
-            opacity: 1;
-        }
-
-        /* Boss Projectile (Fireball) */
-        .boss-projectile {
-            position: absolute;
-            width: 22px;
-            height: 22px;
-            border-radius: 50%;
-            background: radial-gradient(circle, #ffffff 0%, #ff69b4 40%, #ff4500 100%);
-            box-shadow: 0 0 20px #ff1493, 0 0 35px #ff4500;
-            z-index: 14;
-            pointer-events: none;
-        }
-
-        .boss-projectile.homing {
-            background: radial-gradient(circle, #ffffff 0%, #00d9ff 50%, #ff0055 100%);
-            box-shadow: 0 0 25px #00d9ff, 0 0 40px #ff0055;
-        }
-
-        /* Mask components */
-        .mask-wrapper {
-            position: relative;
-            z-index: 10;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
-
-        .mask-head-glow {
-            position: absolute;
-            top: -15px;
-            width: 420px;
-            height: 300px;
-            background: radial-gradient(ellipse at center 60%, rgba(220, 20, 60, 0.35) 0%, rgba(150, 0, 20, 0.15) 50%, rgba(0, 0, 0, 0) 75%);
-            border-radius: 40% 40% 50% 50% / 30% 30% 60% 60%;
-            pointer-events: none;
-            filter: blur(15px);
-            opacity: 0;
-            transition: opacity 1.2s ease-in-out;
-        }
-
-        .spidey-mask {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 80px;
-            z-index: 2;
-            transform: scaleY(0.02) scaleX(0.8);
-            opacity: 0;
-            transition: transform 1s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.5s ease-in-out;
-        }
-
-        .spidey-mask.open {
-            opacity: 1;
-            transform: scaleY(1) scaleX(1);
-        }
-
-        .mask-head-glow.active {
-            opacity: 1;
-        }
-
-        .eye {
-            width: 170px;
-            height: 230px;
-            filter: drop-shadow(0 0 16px rgba(255, 255, 255, 0.4));
-            transition: filter 0.3s ease;
-        }
-
-        .left-eye {
-            transform: rotate(90deg);
-        }
-
-        .right-eye {
-            transform: rotate(-90deg) scaleX(-1);
-        }
-
-        .eye-frame {
-            fill: #111111;
-            stroke: #000000;
-            stroke-width: 3;
-        }
-
-        .eye-lens {
-            fill: url(#lensGradient);
-        }
-
-        /* Controls Bar Container */
-        .controls-container {
-            position: absolute;
-            bottom: 5%;
-            z-index: 20;
-            display: flex;
-            gap: 20px;
-        }
-
-        .control-btn {
+        .start_btn {
             background: rgba(0, 0, 0, 0.6);
             color: #ffffff;
             border: 2px solid rgba(255, 255, 255, 0.4);
@@ -611,9 +156,10 @@
             outline: none;
             transition: all 0.3s ease;
             box-shadow: 0 0 15px rgba(0, 0, 0, 0.5);
+            width: 100%;
         }
 
-        .control-btn:hover {
+        .start_btn:hover {
             background: #ffffff;
             color: #000000;
             border-color: #ffffff;
@@ -621,183 +167,248 @@
             transform: translateY(-2px);
         }
 
-        .control-btn.playing {
-            border-color: rgba(220, 20, 60, 0.8);
-            box-shadow: 0 0 15px rgba(220, 20, 60, 0.4);
+        .full_btn {
+            background: rgba(0, 0, 0, 0.6);
+            color: #ffffff;
+            border: 2px solid rgba(255, 255, 255, 0.4);
+            padding: 14px 32px;
+            font-size: 0.85rem;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            font-weight: 600;
+            cursor: pointer;
+            border-radius: 40px;
+            outline: none;
+            transition: all 0.3s ease;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.5);
+            width: 100%;
         }
 
-        .control-btn.playing:hover {
-            background: #dc143c;
+        .full_btn:hover {
+            background: #ffffff;
+            color: #000000;
+            border-color: #ffffff;
+            box-shadow: 0 0 25px rgba(255, 255, 255, 0.6);
+            transform: translateY(-2px);
+        }
+
+        .control-box {
+            background-color: rgba(0, 0, 0, .5);
+            border-radius: 16px;
+            padding: 10px 15px;
+            height: 50px;
+            width: 100%;
+            max-width: 380px;
+            display: flex;
+            flex-direction: row;
+            gap: 15px;
+
+            text-align: center;
+        }
+
+        .menu_btn {
+            background: rgba(0, 0, 0, 0.6);
             color: #ffffff;
-            border-color: #dc143c;
-            box-shadow: 0 0 25px rgba(220, 20, 60, 0.8);
+            border: 2px solid rgba(255, 255, 255, 0.4);
+            padding: 5px 32px;
+            height: 30px;
+            font-size: 0.75rem;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            font-weight: 300;
+            cursor: pointer;
+            border-radius: 40px;
+            outline: none;
+            transition: all 0.3s ease;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.5);
+            width: 100%;
+        }
+
+        .menu_btn:hover {
+            background: #ffffff;
+            color: #000000;
+            border-color: #ffffff;
+            box-shadow: 0 0 10px rgba(255, 255, 255, 0.6);
+            transform: translateY(-2px);
+        }
+
+        .key-hints {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .key-badge {
+            background: #111;
+            border: 2px solid #00d9ff;
+            color: #00d9ff;
+            padding: 8px 14px;
+            border-radius: 8px;
+            font-weight: bold;
+            font-size: 1rem;
+            box-shadow: 0 0 10px rgba(0, 217, 255, 0.4);
+        }
+
+        #damageOverlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 0, 0, 0.35);
+            z-index: 30;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.15s ease-out;
+        }
+
+        #loading-text {
+            color: #00d9ff;
+            font-size: 0.9rem;
+            font-weight: bold;
+        }
+
+        #level-up-banner {
+            position: absolute;
+            top: 40%;
+            width: 100%;
+            text-align: center;
+            font-size: 2.5rem;
+            font-weight: 900;
+            color: #ffcc00;
+            text-shadow: 0 0 20px #ffcc00;
+            pointer-events: none;
+            z-index: 35;
+            opacity: 0;
+            transition: opacity 0.3s ease, transform 0.3s ease;
+            transform: scale(0.5);
+        }
+
+        #level-up-banner.show {
+            opacity: 1;
+            transform: scale(1.2);
         }
     </style>
 </head>
 
 <body>
 
-    <div id="mainCredits">
-        <div class="game-main-title">Multiverse Defense: Phoenix Rising</div>
-        <div class="game-author">by MrTanoso</div>
-    </div>
+    <div id="game-container">
+        <div class="bg-ambience"></div>
+        <div id="damageOverlay"></div>
+        <div id="level-up-banner">LEVEL UP!</div>
 
-    <div class="bg-ambience"></div>
-    <div id="damageOverlay"></div>
-    <div id="abilityShockwave"></div>
-
-    <div id="introOverlay">Level 1: Survive for 30s</div>
-
-    <div id="endOverlay">
-        <div class="end-title" id="endTitle">YOU DIED</div>
-        <div class="end-rating" id="endRating"></div>
-    </div>
-
-    <div class="ui-container" id="uiContainer">
-        <div class="hud-info">
-            <span class="hud-level" id="levelText">LEVEL 1/5</span>
-            <span id="timerText">30s</span>
+        <div class="mask-hud">
+            <svg class="eye left-eye" id="leftEye" viewBox="0 0 200 280">
+                <path class="eye-frame"
+                    d="M 175,25 C 125,10 60,30 20,110 C -5,160 0,210 35,245 C 75,280 140,260 185,180 C 205,140 200,75 175,25 Z" />
+                <path class="eye-lens"
+                    d="M 160,38 C 118,25 62,42 28,112 C 8,155 12,198 40,228 C 72,258 130,240 168,172 C 185,135 180,80 160,38 Z" />
+            </svg>
+            <svg class="eye right-eye" id="rightEye" viewBox="0 0 200 280">
+                <path class="eye-frame"
+                    d="M 175,25 C 125,10 60,30 20,110 C -5,160 0,210 35,245 C 75,280 140,260 185,180 C 205,140 200,75 175,25 Z" />
+                <path class="eye-lens"
+                    d="M 160,38 C 118,25 62,42 28,112 C 8,155 12,198 40,228 C 72,258 130,240 168,172 C 185,135 180,80 160,38 Z" />
+            </svg>
         </div>
-        <div class="health-bar-border">
-            <div class="health-bar-fill" id="healthFill"></div>
-        </div>
-        <div id="abilityPrompt">[SPACE] EMERGENCY SHOCKWAVE</div>
-    </div>
 
-    <div id="bossUi">
-        <div class="boss-name" id="bossPhaseText">JEAN GREY (DARK PHOENIX)</div>
-        <div class="boss-bar-border">
-            <div class="boss-bar-fill" id="bossHealthFill"></div>
+        <div id="controls-container" class="control-box">
+            <button class="menu_btn" id="full_btn">FULLSCREEN</button>
+            <form action="spideys.html">
+                <button class="menu_btn" type="submit" value="RETURN" onclick="history.back()">STOP</button>
+            </form>
         </div>
-    </div>
 
-    <div id="bossContainer">
-        <div class="jean-grey-face" id="jeanFace">
-            <div class="jean-hair"></div>
-            <div class="jean-hair-strands"></div>
-            <div class="jean-eyes">
-                <div class="jean-eye"></div>
-                <div class="jean-eye"></div>
+        <canvas id="gameCanvas"></canvas>
+
+        <div id="start-screen" class="overlay">
+            <div class="game-title">Multiverse Defense: Web Rhythm</div>
+            <div class="game-author">by MrTanoso</div>
+
+            <div class="menu-box">
+                <div id="loading-text"></div>
+
+                <button id="start_btn" class="start_btn">PLAY</button>
+                <button class="full_btn" id="full_btn">FULLSCREEN</button>
             </div>
+
         </div>
     </div>
 
-    <div id="spiderPlayer">🕷️</div>
 
-    <canvas id="webCanvas"></canvas>
-    <div id="villainsContainer"></div>
 
-    <audio id="spideyAudio" src="spidey.mp3" preload="auto"></audio>
+    <div id="results-screen" class="overlay hidden">
+        <div class="game-title" id="results-title">VICTORY!</div>
 
-    <div class="mask-wrapper" id="maskWrapper">
-        <div class="mask-head-glow" id="headGlow"></div>
+        <div class="menu-box">
+            <div style="color: #00d9ff; font-size: 0.85rem; text-transform: uppercase;">Final Score</div>
+            <div id="res-score" style="font-size: 2.2rem; font-weight: bold; color: #fff; margin-bottom: 5px;">0
+            </div>
+            <div style="color: #ffcc00; font-size: 0.9rem; font-weight: bold; margin-bottom: 15px;" id="res-level">
+                REACHED LEVEL 1</div>
 
-        <div class="spidey-mask" id="mask">
-            <svg width="0" height="0" style="position: absolute;">
-                <defs>
-                    <radialGradient id="lensGradient" cx="45%" cy="35%" r="65%">
-                        <stop offset="0%" stop-color="#ffffff" />
-                        <stop offset="70%" stop-color="#e2e2e2" />
-                        <stop offset="100%" stop-color="#aeaeae" />
-                    </radialGradient>
-                </defs>
-            </svg>
+            <div style="display: flex; justify-content: space-around; width: 100%; margin-top: 5px;">
+                <div>
+                    <div style="color: #ffcc00; font-size: 1.2rem; font-weight: bold;" id="res-combo">0x</div>
+                    <div style="color: #aaa; font-size: 0.75rem;">MAX COMBO</div>
+                </div>
+                <div>
+                    <div style="color: #00ff88; font-size: 1.2rem; font-weight: bold;" id="res-acc">0%</div>
+                    <div style="color: #aaa; font-size: 0.75rem;">ACCURACY</div>
+                </div>
+            </div>
 
-            <svg class="eye left-eye" viewBox="0 0 200 280">
-                <path class="eye-frame"
-                    d="M 175,25 C 125,10 60,30 20,110 C -5,160 0,210 35,245 C 75,280 140,260 185,180 C 205,140 200,75 175,25 Z" />
-                <path class="eye-lens"
-                    d="M 160,38 C 118,25 62,42 28,112 C 8,155 12,198 40,228 C 72,258 130,240 168,172 C 185,135 180,80 160,38 Z" />
-            </svg>
-
-            <svg class="eye right-eye" viewBox="0 0 200 280">
-                <path class="eye-frame"
-                    d="M 175,25 C 125,10 60,30 20,110 C -5,160 0,210 35,245 C 75,280 140,260 185,180 C 205,140 200,75 175,25 Z" />
-                <path class="eye-lens"
-                    d="M 160,38 C 118,25 62,42 28,112 C 8,155 12,198 40,228 C 72,258 130,240 168,172 C 185,135 180,80 160,38 Z" />
-            </svg>
+            <button id="restart-btn" class="start_btn">PLAY AGAIN</button>
+            <form action="spideys.html">
+                <button class="start_btn" type="submit" value="RETURN" onclick="history.back()">RETURN</button>
+            </form>
         </div>
     </div>
-
-    <div class="controls-container">
-        <button class="control-btn" id="toggleBtn">PLAY</button>
-        <button class="control-btn" id="fullscreenBtn">FULLSCREEN</button>
     </div>
 
     <script>
-        const toggleBtn = document.getElementById('toggleBtn');
-        const fullscreenBtn = document.getElementById('fullscreenBtn');
-        const mask = document.getElementById('mask');
-        const maskWrapper = document.getElementById('maskWrapper');
-        const headGlow = document.getElementById('headGlow');
-        const mainCredits = document.getElementById('mainCredits');
-        const uiContainer = document.getElementById('uiContainer');
-        const healthFill = document.getElementById('healthFill');
-        const timerText = document.getElementById('timerText');
-        const levelText = document.getElementById('levelText');
-        const abilityPrompt = document.getElementById('abilityPrompt');
-        const damageOverlay = document.getElementById('damageOverlay');
-        const abilityShockwave = document.getElementById('abilityShockwave');
-        const introOverlay = document.getElementById('introOverlay');
-        const endOverlay = document.getElementById('endOverlay');
-        const endTitle = document.getElementById('endTitle');
-        const endRating = document.getElementById('endRating');
-        const audio = document.getElementById('spideyAudio');
-        const villainsContainer = document.getElementById('villainsContainer');
-        const bossContainer = document.getElementById('bossContainer');
-        const bossUi = document.getElementById('bossUi');
-        const bossHealthFill = document.getElementById('bossHealthFill');
-        const bossPhaseText = document.getElementById('bossPhaseText');
-        const jeanFace = document.getElementById('jeanFace');
-        const spiderPlayer = document.getElementById('spiderPlayer');
-        const canvas = document.getElementById('webCanvas');
-        const ctx = canvas.getContext('2d');
 
+        const menu_btn = document.getElementById('full_btn');
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        const damageOverlay = document.getElementById('damageOverlay');
+        const levelUpBanner = document.getElementById('level-up-banner');
+        const leftEye = document.getElementById('leftEye');
+        const rightEye = document.getElementById('rightEye');
+        const loadingText = document.getElementById('loading-text');
+
+        let audioCtx, audioBuffer, audioSource;
         let isPlaying = false;
-        let isGameActive = false;
-        let webs = [];
-        let villainInterval = null;
-        let countdownInterval = null;
+        let songStartTime = 0;
+        let score = 0, combo = 0, maxCombo = 0, totalHits = 0, totalNotesPlayed = 0, health = 100;
+        const keys = {};
 
         let currentLevel = 1;
-        let currentHealth = 100;
-        let timeLeft = 30;
-        let abilityAvailable = false;
-
-        // Boss Fight Variables
-        const MAX_BOSS_HEALTH = 300;
-        let bossHealth = MAX_BOSS_HEALTH;
-        let bossAttackInterval = null;
-        let projectiles = [];
-        let spiderX = window.innerWidth / 2;
-        let spiderY = window.innerHeight * 0.8;
-        let spiderSpeed = 8;
-        let keys = {};
-
-        const levelConfigs = {
-            1: { speed: 5.5, spawnRate: 1600 },
-            2: { speed: 4.2, spawnRate: 1300 },
-            3: { speed: 3.2, spawnRate: 1000 },
-            4: { speed: 2.8, spawnRate: 850 }
-        };
-
-        const villainsData = [
-            { name: "Green Goblin", icon: "🎃" },
-            { name: "Doc Ock", icon: "🐙" },
-            { name: "Sandman", icon: "⏳" },
-            { name: "Lizard", icon: "🦎" },
-            { name: "Electro", icon: "⚡" },
-            { name: "Venom", icon: "🕷️" },
-            { name: "Mysterio", icon: "🔮" },
-            { name: "Vulture", icon: "🦅" }
+        let scrollSpeed = 650;
+        const levelThresholds = [
+            { level: 1, scoreNeeded: 0, speed: 650, name: "ROOKIE" },
+            { level: 2, scoreNeeded: 5000, speed: 750, name: "DEFENDER" },
+            { level: 3, scoreNeeded: 20000, speed: 850, name: "AVENGER" },
+            { level: 4, scoreNeeded: 40000, speed: 950, name: "MULTIVERSE HERO" },
+            { level: 5, scoreNeeded: 500000, speed: 1100, name: "SUPREME SPIDER" }
         ];
 
-        function resizeCanvas() {
-            canvas.width = window.innerWidth;
-            canvas.height = window.innerHeight;
-        }
-        window.addEventListener('resize', resizeCanvas);
-        resizeCanvas();
+        const KEYS = ['KeyD', 'KeyF', 'KeyJ', 'KeyK'];
+        const KEY_LABELS = ['D', 'F', 'J', 'K'];
+        const LANE_COLORS = ['#dc143c', '#00d9ff', '#ffcc00', '#ff1493'];
+
+        const villainsData = [
+            { icon: "🎃" }, { icon: "🐙" }, { icon: "⏳" }, { icon: "🦎" },
+            { icon: "⚡" }, { icon: "🕷️" }, { icon: "🔮" }, { icon: "🦅" }
+        ];
+
+        const lanes = [
+            { active: false, pulse: 0 },
+            { active: false, pulse: 0 },
+            { active: false, pulse: 0 },
+            { active: false, pulse: 0 }
+        ];
 
         window.addEventListener('keydown', (e) => {
             keys[e.key.toLowerCase()] = true;
@@ -809,7 +420,7 @@
             keys[e.key] = false;
         });
 
-        fullscreenBtn.addEventListener('click', () => {
+        menu_btn.addEventListener('click', () => {
             if (!document.fullscreenElement) {
                 document.documentElement.requestFullscreen().catch(err => console.log(err));
             } else {
@@ -819,496 +430,351 @@
             }
         });
 
-        toggleBtn.addEventListener('click', (e) => {
-            e.stopPropagation();
-            if (!isPlaying) {
+        let notes = [];
+        let judgements = [];
+        let webs = [];
+
+        const hitWindowGood = 0.135;
+        const hitWindowGreat = 0.090;
+        const hitWindowPerfect = 0.045;
+
+        function resizeCanvas() {
+            canvas.width = canvas.parentElement.clientWidth;
+            canvas.height = canvas.parentElement.clientHeight;
+        }
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+
+        function analyzeAudioBeats(buffer) {
+            const channelData = buffer.getChannelData(0);
+            const sampleRate = buffer.sampleRate;
+            const chunkSize = Math.floor(sampleRate * 0.05);
+            const beats = [];
+
+            let prevEnergy = 0;
+            const threshold = 1.35;
+
+            for (let i = 0; i < channelData.length; i += chunkSize) {
+                let sum = 0;
+                for (let j = i; j < i + chunkSize && j < channelData.length; j++) {
+                    sum += channelData[j] * channelData[j];
+                }
+                const energy = Math.sqrt(sum / chunkSize);
+                const time = i / sampleRate;
+
+                if (energy > prevEnergy * threshold && energy > 0.08) {
+                    if (beats.length === 0 || (time - beats[beats.length - 1]) > 0.18) {
+                        beats.push(time);
+                    }
+                }
+                prevEnergy = energy;
+            }
+
+            let lastLane = -1;
+            return beats.map((time) => {
+                let lane;
+                do {
+                    lane = Math.floor(Math.random() * 4);
+                } while (lane === lastLane && Math.random() < 0.8);
+
+                lastLane = lane;
+                const villain = villainsData[Math.floor(Math.random() * villainsData.length)];
+
+                return {
+                    lane: lane,
+                    time: time,
+                    hit: false,
+                    missed: false,
+                    icon: villain.icon
+                };
+            });
+        }
+
+        async function loadAndStartGame() {
+            if (loadingText) loadingText.innerText = "Loading...";
+
+            if (!audioCtx) {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            }
+
+            try {
+                const response = await fetch('spidey.mp3');
+                const arrayBuffer = await response.arrayBuffer();
+                audioBuffer = await audioCtx.decodeAudioData(arrayBuffer);
+
+                notes = analyzeAudioBeats(audioBuffer);
+
+                score = 0; combo = 0; maxCombo = 0; totalHits = 0; totalNotesPlayed = 0; health = 100;
                 currentLevel = 1;
-                startSequence();
-            } else {
-                resetExperience();
-            }
-        });
+                scrollSpeed = levelThresholds[0].speed;
+                judgements = []; webs = [];
 
-        audio.addEventListener('ended', resetExperience);
+                document.getElementById('start-screen').classList.add('hidden');
+                document.getElementById('results-screen').classList.add('hidden');
 
-        function startSequence() {
-            isPlaying = true;
-            toggleBtn.classList.add('playing');
-            toggleBtn.textContent = 'STOP';
+                if (audioSource) audioSource.stop();
+                audioSource = audioCtx.createBufferSource();
+                audioSource.buffer = audioBuffer;
+                audioSource.connect(audioCtx.destination);
 
-            mainCredits.style.opacity = '0'; // Hide title text when game starts
-            endOverlay.classList.remove('show');
-            audio.play().catch(err => console.log("Audio error:", err));
+                audioSource.onended = () => { if (isPlaying) endGame(true); };
 
-            if (currentLevel <= 4) {
-                introOverlay.textContent = `Level ${currentLevel}: Survive for 30s`;
-            } else {
-                introOverlay.textContent = `Level 5: BOSS FIGHT - JEAN GREY!`;
-            }
+                songStartTime = audioCtx.currentTime;
+                audioSource.start(0);
 
-            introOverlay.classList.add('show');
-
-            setTimeout(() => {
-                introOverlay.classList.remove('show');
-                setTimeout(() => beginGameplay(), 400);
-            }, 1800);
-        }
-
-        function beginGameplay() {
-            if (currentLevel === 5) {
-                startBossFight();
-                return;
-            }
-
-            isGameActive = true;
-            currentHealth = 100;
-            timeLeft = 30;
-            abilityAvailable = false;
-
-            abilityPrompt.classList.remove('ready');
-            healthFill.style.width = '100%';
-            timerText.textContent = `${timeLeft}s`;
-            levelText.textContent = `LEVEL ${currentLevel}/5`;
-
-            uiContainer.classList.add('active');
-            mask.classList.add('open');
-            headGlow.classList.add('active');
-
-            startVillainSpawns();
-
-            countdownInterval = setInterval(() => {
-                timeLeft--;
-                timerText.textContent = `${timeLeft}s`;
-
-                if (timeLeft <= 0) {
-                    levelCompleted();
-                }
-            }, 1000);
-        }
-
-        function dealDamage(amount) {
-            if (!isGameActive) return;
-
-            let potentialHealth = currentHealth - amount;
-
-            if (potentialHealth <= 0 && !abilityAvailable) {
-                currentHealth = 1;
-                abilityAvailable = true;
-                abilityPrompt.classList.add('ready');
-            } else if (currentHealth === 1 && !abilityAvailable) {
-                currentHealth = 0;
-            } else {
-                currentHealth = Math.max(0, potentialHealth);
-            }
-
-            healthFill.style.width = `${currentHealth}%`;
-
-            damageOverlay.style.opacity = '1';
-            setTimeout(() => damageOverlay.style.opacity = '0', 150);
-
-            if (currentHealth <= 0) {
-                triggerDeath();
+                isPlaying = true;
+                requestAnimationFrame(gameLoop);
+            } catch (err) {
+                if (loadingText) loadingText.innerText = "ERROR: Ensure 'spidey.mp3' is present in your root directory!";
             }
         }
 
-        document.addEventListener('keydown', (e) => {
-            if (e.code === 'Space' && isGameActive && abilityAvailable) {
-                e.preventDefault();
-                activateShockwaveAbility();
-            }
-        });
+        function checkLevelUp() {
+            const nextLevel = levelThresholds.find(l => l.level === currentLevel + 1);
+            if (nextLevel && score >= nextLevel.scoreNeeded) {
+                currentLevel = nextLevel.level;
+                scrollSpeed = nextLevel.speed;
 
-        function activateShockwaveAbility() {
-            abilityAvailable = false;
-            abilityPrompt.classList.remove('ready');
-
-            abilityShockwave.classList.remove('active');
-            void abilityShockwave.offsetWidth;
-            abilityShockwave.classList.add('active');
-
-            const activeVillains = document.querySelectorAll('.villain');
-            activeVillains.forEach(v => {
-                v.style.transform = 'scale(0) rotate(180deg)';
-                v.style.opacity = '0';
-                setTimeout(() => v.remove(), 300);
-            });
-
-            projectiles.forEach(p => p.el.remove());
-            projectiles = [];
-
-            currentHealth = 100;
-            healthFill.style.width = '100%';
-        }
-
-        function startBossFight() {
-            isGameActive = true;
-            currentHealth = 100;
-            bossHealth = MAX_BOSS_HEALTH;
-            abilityAvailable = false;
-
-            levelText.textContent = `LEVEL 5/5`;
-            timerText.textContent = `BOSS`;
-            bossPhaseText.textContent = "JEAN GREY (PHASE 1)";
-            healthFill.style.width = '100%';
-            bossHealthFill.style.width = '100%';
-
-            uiContainer.classList.add('active');
-            bossUi.classList.add('active');
-            bossContainer.classList.add('active');
-
-            mask.classList.remove('open');
-            headGlow.classList.remove('active');
-
-            spiderX = window.innerWidth / 2;
-            spiderY = window.innerHeight * 0.8;
-            spiderPlayer.style.left = `${spiderX}px`;
-            spiderPlayer.style.top = `${spiderY}px`;
-            spiderPlayer.classList.add('active');
-
-            bossAttackInterval = setInterval(() => {
-                if (!isGameActive) return;
-                executeBossPattern();
-            }, 650);
-        }
-
-        function executeBossPattern() {
-            const bossRect = jeanFace.getBoundingClientRect();
-            const startX = bossRect.left + bossRect.width / 2;
-            const startY = bossRect.top + bossRect.height / 2;
-
-            const healthPct = bossHealth / MAX_BOSS_HEALTH;
-
-            if (healthPct > 0.6) {
-                bossPhaseText.textContent = "JEAN GREY (PHASE 1)";
-                fireProjectile(startX, startY, spiderX, spiderY, 7.5, false);
-            } else if (healthPct > 0.3) {
-                bossPhaseText.textContent = "JEAN GREY (PHASE 2 - BURST FIRE)";
-                fireProjectile(startX, startY, spiderX, spiderY, 8, false);
-                fireProjectile(startX, startY, spiderX - 150, spiderY, 7.5, false);
-                fireProjectile(startX, startY, spiderX + 150, spiderY, 7.5, false);
-            } else {
-                bossPhaseText.textContent = "JEAN GREY (PHASE 3 - HOMING CHAOS!)";
-                fireProjectile(startX, startY, spiderX, spiderY, 8.5, false);
-                if (Math.random() > 0.4) {
-                    fireProjectile(startX, startY, spiderX, spiderY, 5, true);
-                }
+                levelUpBanner.innerText = `LEVEL ${currentLevel}: ${nextLevel.name}!`;
+                levelUpBanner.classList.add('show');
+                setTimeout(() => levelUpBanner.classList.remove('show'), 1200);
             }
         }
 
-        function fireProjectile(sx, sy, tx, ty, speed, isHoming) {
-            const pEl = document.createElement('div');
-            pEl.className = `boss-projectile ${isHoming ? 'homing' : ''}`;
-            pEl.style.left = `${sx}px`;
-            pEl.style.top = `${sy}px`;
-            document.body.appendChild(pEl);
-
-            const angle = Math.atan2(ty - sy, tx - sx);
-
-            projectiles.push({
-                el: pEl,
-                x: sx,
-                y: sy,
-                vx: Math.cos(angle) * speed,
-                vy: Math.sin(angle) * speed,
-                isHoming: isHoming
-            });
-        }
-
-        function updateSpiderPlayerAndProjectiles() {
-            if (isGameActive && currentLevel === 5) {
-                if (keys['w'] || keys['ArrowUp']) spiderY = Math.max(50, spiderY - spiderSpeed);
-                if (keys['s'] || keys['ArrowDown']) spiderY = Math.min(window.innerHeight - 80, spiderY + spiderSpeed);
-                if (keys['a'] || keys['ArrowLeft']) spiderX = Math.max(50, spiderX - spiderSpeed);
-                if (keys['d'] || keys['ArrowRight']) spiderX = Math.min(window.innerWidth - 50, spiderX + spiderSpeed);
-
-                spiderPlayer.style.left = `${spiderX}px`;
-                spiderPlayer.style.top = `${spiderY}px`;
-
-                for (let i = projectiles.length - 1; i >= 0; i--) {
-                    let p = projectiles[i];
-
-                    if (p.isHoming) {
-                        let hAngle = Math.atan2(spiderY - p.y, spiderX - p.x);
-                        p.vx = Math.cos(hAngle) * 5.5;
-                        p.vy = Math.sin(hAngle) * 5.5;
-                    }
-
-                    p.x += p.vx;
-                    p.y += p.vy;
-                    p.el.style.left = `${p.x}px`;
-                    p.el.style.top = `${p.y}px`;
-
-                    let dist = Math.hypot(p.x - spiderX, p.y - spiderY);
-                    if (dist < 30) {
-                        dealDamage(18);
-                        p.el.remove();
-                        projectiles.splice(i, 1);
-                        continue;
-                    }
-
-                    if (p.x < -50 || p.x > window.innerWidth + 50 || p.y < -50 || p.y > window.innerHeight + 50) {
-                        p.el.remove();
-                        projectiles.splice(i, 1);
-                    }
-                }
-            }
-            requestAnimationFrame(updateSpiderPlayerAndProjectiles);
-        }
-        updateSpiderPlayerAndProjectiles();
-
-        function damageBoss(amount) {
-            if (!isGameActive || currentLevel !== 5) return;
-
-            bossHealth = Math.max(0, bossHealth - amount);
-            const healthPct = (bossHealth / MAX_BOSS_HEALTH) * 100;
-            bossHealthFill.style.width = `${healthPct}%`;
-
-            jeanFace.style.transform = 'scale(0.92)';
-            setTimeout(() => jeanFace.style.transform = 'none', 100);
-
-            if (bossHealth <= 0) {
-                bossDefeated();
-            }
-        }
-
-        function bossDefeated() {
-            stopGameLoop();
-
-            endTitle.textContent = "VICTORY!";
-            endTitle.className = "end-title victory";
-            endRating.innerHTML = `You Defeated Jean Grey!<br><span style="font-size: 1.2rem; color: #ff69b4;">Spider-Man Saved The Multiverse!</span>`;
-            endOverlay.classList.add('show');
-
-            setTimeout(() => resetExperience(), 5000);
-        }
-
-        function triggerDeath() {
-            stopGameLoop();
-
-            endTitle.textContent = "YOU DIED";
-            endTitle.className = "end-title dead";
-            endRating.textContent = `Failed at Level ${currentLevel}`;
-            endOverlay.classList.add('show');
-
-            setTimeout(() => resetExperience(), 3500);
-        }
-
-        function levelCompleted() {
-            stopGameLoop();
-
-            endTitle.textContent = `LEVEL ${currentLevel} CLEARED!`;
-            endTitle.className = "end-title victory";
-            endRating.innerHTML = `Get ready for the next level...`;
-            endOverlay.classList.add('show');
-
-            setTimeout(() => {
-                currentLevel++;
-                startSequence();
-            }, 2500);
-        }
-
-        function stopGameLoop() {
-            isGameActive = false;
-            clearInterval(villainInterval);
-            clearInterval(countdownInterval);
-            clearInterval(bossAttackInterval);
-            villainsContainer.innerHTML = '';
-            projectiles.forEach(p => p.el.remove());
-            projectiles = [];
-            abilityPrompt.classList.remove('ready');
-            spiderPlayer.classList.remove('active');
-            bossContainer.classList.remove('active');
-            bossUi.classList.remove('active');
-        }
-
-        function resetExperience() {
-            audio.pause();
-            audio.currentTime = 0;
-
-            stopGameLoop();
-
-            mainCredits.style.opacity = '1'; // Show title on main screen again
-            introOverlay.classList.remove('show');
-            endOverlay.classList.remove('show');
-            uiContainer.classList.remove('active');
-            mask.classList.remove('open');
-            headGlow.classList.remove('active');
-            toggleBtn.classList.remove('playing');
-            toggleBtn.textContent = 'PLAY';
-
-            maskWrapper.style.transform = 'translate(0px, 0px)';
+        function endGame(victory = true) {
             isPlaying = false;
-            currentLevel = 1;
-            webs = [];
+            if (audioSource) {
+                try { audioSource.stop(); } catch (e) { }
+            }
+
+            const totalPossible = notes.length;
+            const accuracy = totalNotesPlayed > 0 ? Math.min(100, Math.round((totalHits / totalPossible) * 100)) : 0;
+
+            document.getElementById('results-title').textContent = victory ? "VICTORY!" : "YOU DIED";
+            document.getElementById('results-title').style.color = victory ? "#00ff88" : "#ff2a2a";
+            document.getElementById('res-score').innerText = score.toLocaleString();
+            document.getElementById('res-level').innerText = `REACHED LEVEL ${currentLevel} (${levelThresholds[currentLevel - 1].name})`;
+            document.getElementById('res-combo').innerText = maxCombo + 'x';
+            document.getElementById('res-acc').innerText = accuracy + '%';
+
+            document.getElementById('results-screen').classList.remove('hidden');
         }
 
-        function startVillainSpawns() {
-            const config = levelConfigs[currentLevel] || levelConfigs[1];
+        window.addEventListener('keydown', (e) => {
+            if (!isPlaying) return;
+            const keyIndex = KEYS.indexOf(e.code);
+            if (keyIndex !== -1 && !lanes[keyIndex].active) {
+                lanes[keyIndex].active = true;
+                lanes[keyIndex].pulse = 1.0;
+                checkHit(keyIndex);
+            }
+        });
 
-            villainInterval = setInterval(() => {
-                if (!isGameActive) return;
+        window.addEventListener('keyup', (e) => {
+            const keyIndex = KEYS.indexOf(e.code);
+            if (keyIndex !== -1) {
+                lanes[keyIndex].active = false;
+            }
+        });
 
-                const villainData = villainsData[Math.floor(Math.random() * villainsData.length)];
-                const el = document.createElement('div');
-                el.className = 'villain';
-                el.style.setProperty('--animSpeed', `${config.speed}s`);
-                el.innerHTML = `${villainData.icon}<span class="villain-label">${villainData.name}</span>`;
+        function checkHit(laneIndex) {
+            const hitLineY = canvas.height - 110;
+            const currentTime = audioCtx.currentTime - songStartTime;
 
-                const side = Math.floor(Math.random() * 4);
-                let startX, startY;
+            let closestNote = null;
+            let minDiff = Infinity;
 
-                if (side === 0) { startX = Math.random() * window.innerWidth; startY = -80; }
-                else if (side === 1) { startX = window.innerWidth + 80; startY = Math.random() * window.innerHeight; }
-                else if (side === 2) { startX = Math.random() * window.innerWidth; startY = window.innerHeight + 80; }
-                else { startX = -80; startY = Math.random() * window.innerHeight; }
-
-                el.style.left = `${startX}px`;
-                el.style.top = `${startY}px`;
-                el.style.setProperty('--startX', `${startX}px`);
-                el.style.setProperty('--startY', `${startY}px`);
-
-                villainsContainer.appendChild(el);
-
-                setTimeout(() => {
-                    if (el.parentNode && isGameActive) {
-                        dealDamage(15);
-                        el.remove();
+            for (let note of notes) {
+                if (note.lane === laneIndex && !note.hit && !note.missed) {
+                    const timeDiff = Math.abs(note.time - currentTime);
+                    if (timeDiff < minDiff) {
+                        minDiff = timeDiff;
+                        closestNote = note;
                     }
-                }, (config.speed - 0.3) * 1000);
-            }, config.spawnRate);
-        }
-
-        document.addEventListener('mousemove', (e) => {
-            if (!isGameActive || currentLevel === 5) return;
-
-            const mouseX = (e.clientX - window.innerWidth / 2) / (window.innerWidth / 2);
-            const mouseY = (e.clientY - window.innerHeight / 2) / (window.innerHeight / 2);
-
-            maskWrapper.style.transform = `translate(${mouseX * 25}px, ${mouseY * 20}px)`;
-        });
-
-        document.addEventListener('click', (e) => {
-            if (!isGameActive || e.target.closest('.control-btn')) return;
-
-            let startX = window.innerWidth / 2;
-            let startY = window.innerHeight / 2;
-
-            if (currentLevel === 5) {
-                startX = spiderX;
-                startY = spiderY;
-
-                if (e.target.closest('#bossContainer') || e.target.closest('.jean-grey-face')) {
-                    damageBoss(6);
-                }
-            } else {
-                const targetVillain = e.target.closest('.villain');
-                if (targetVillain) {
-                    targetVillain.style.transform = 'scale(0) rotate(180deg)';
-                    targetVillain.style.opacity = '0';
-                    setTimeout(() => targetVillain.remove(), 250);
                 }
             }
 
+            if (closestNote && minDiff <= hitWindowGood) {
+                closestNote.hit = true;
+                totalNotesPlayed++;
+
+                let rating = 'GOOD', points = 100;
+                if (minDiff <= hitWindowPerfect) {
+                    rating = 'PERFECT'; points = 300; totalHits += 1.0;
+                } else if (minDiff <= hitWindowGreat) {
+                    rating = 'GREAT'; points = 200; totalHits += 0.75;
+                } else {
+                    totalHits += 0.5;
+                }
+
+                combo++;
+                if (combo > maxCombo) maxCombo = combo;
+                score += (points + combo * 10) * currentLevel;
+                health = Math.min(100, health + 2);
+
+                checkLevelUp();
+                addJudgement(rating, laneIndex);
+                triggerWebEffect(laneIndex, hitLineY);
+                animateEyesHit();
+            }
+        }
+
+        function animateEyesHit() {
+            leftEye.style.transform = 'rotate(90deg) scale(1.15)';
+            rightEye.style.transform = 'rotate(-90deg) scaleX(-1) scale(1.15)';
+            setTimeout(() => {
+                leftEye.style.transform = 'rotate(90deg) scale(0.8)';
+                rightEye.style.transform = 'rotate(-90deg) scaleX(-1) scale(0.8)';
+            }, 100);
+        }
+
+        function triggerWebEffect(lane, targetY) {
+            const laneWidth = canvas.width / 4;
             webs.push({
-                startX: startX,
-                startY: startY,
-                endX: e.clientX,
-                endY: e.clientY,
-                alpha: 1,
-                life: 0,
-                subStrands: generateSubStrands(startX, startY, e.clientX, e.clientY)
+                sx: canvas.width / 2, sy: 50,
+                ex: lane * laneWidth + laneWidth / 2, ey: targetY,
+                life: 1.0
             });
-        });
-
-        function generateSubStrands(sx, sy, ex, ey) {
-            let strands = [];
-            for (let i = 0; i < 3; i++) {
-                strands.push({
-                    endX: ex + (Math.random() - 0.5) * 60,
-                    endY: ey + (Math.random() - 0.5) * 60
-                });
-            }
-            return strands;
         }
 
-        function animateWebs() {
+        function addJudgement(text, lane) {
+            judgements.push({
+                text: text, lane: lane,
+                y: canvas.height - 150, opacity: 1.0, scale: 1.4
+            });
+        }
+
+        function gameLoop() {
+            if (!isPlaying) return;
+
+            const currentTime = audioCtx.currentTime - songStartTime;
             ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            const laneWidth = canvas.width / 4;
+            const hitLineY = canvas.height - 110;
+
+            for (let i = 0; i < 4; i++) {
+                const x = i * laneWidth;
+                ctx.fillStyle = lanes[i].active ? 'rgba(220, 20, 60, 0.2)' : 'rgba(15, 15, 20, 0.4)';
+                ctx.fillRect(x, 0, laneWidth, canvas.height);
+
+                ctx.strokeStyle = 'rgba(220, 20, 60, 0.3)';
+                ctx.lineWidth = 1;
+                ctx.beginPath();
+                ctx.moveTo(x, 0); ctx.lineTo(x, canvas.height);
+                ctx.stroke();
+
+                if (lanes[i].pulse > 0) {
+                    ctx.fillStyle = LANE_COLORS[i];
+                    ctx.globalAlpha = lanes[i].pulse * 0.3;
+                    ctx.fillRect(x, 0, laneWidth, canvas.height);
+                    ctx.globalAlpha = 1.0;
+                    lanes[i].pulse -= 0.05;
+                }
+
+                ctx.fillStyle = lanes[i].active ? '#ffffff' : '#00d9ff';
+                ctx.font = 'bold 22px Segoe UI';
+                ctx.textAlign = 'center';
+                ctx.fillText(KEY_LABELS[i], x + laneWidth / 2, hitLineY + 55);
+            }
+
+            ctx.strokeStyle = '#dc143c';
+            ctx.lineWidth = 4;
+            ctx.shadowColor = '#dc143c';
+            ctx.shadowBlur = 12;
+            ctx.beginPath();
+            ctx.moveTo(0, hitLineY); ctx.lineTo(canvas.width, hitLineY);
+            ctx.stroke();
+            ctx.shadowBlur = 0;
+
+            for (let note of notes) {
+                if (note.hit) continue;
+
+                const timeDiff = note.time - currentTime;
+                const y = hitLineY - (timeDiff * scrollSpeed);
+
+                if (y > hitLineY + 50 && !note.missed) {
+                    note.missed = true;
+                    combo = 0;
+                    totalNotesPlayed++;
+                    health -= 12;
+                    addJudgement('MISS', note.lane);
+
+                    damageOverlay.style.opacity = '1';
+                    setTimeout(() => damageOverlay.style.opacity = '0', 150);
+
+                    if (health <= 0) {
+                        endGame(false);
+                        return;
+                    }
+                }
+
+                if (y > -50 && y < canvas.height + 50) {
+                    const x = note.lane * laneWidth + laneWidth / 2;
+
+                    ctx.fillStyle = 'rgba(10, 10, 10, 0.9)';
+                    ctx.strokeStyle = '#dc143c';
+                    ctx.lineWidth = 2;
+                    ctx.beginPath();
+                    ctx.arc(x, y, 25, 0, Math.PI * 2);
+                    ctx.fill(); ctx.stroke();
+
+                    ctx.font = '22px Segoe UI';
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+                    ctx.fillText(note.icon, x, y);
+                }
+            }
 
             for (let i = webs.length - 1; i >= 0; i--) {
                 let w = webs[i];
-                w.life += 0.1;
-
-                let currentX = w.startX + (w.endX - w.startX) * Math.min(w.life, 1);
-                let currentY = w.startY + (w.endY - w.startY) * Math.min(w.life, 1);
-
                 ctx.beginPath();
-                ctx.moveTo(w.startX, w.startY);
-                ctx.lineTo(currentX, currentY);
-                ctx.strokeStyle = `rgba(255, 255, 255, ${w.alpha})`;
-                ctx.lineWidth = 4;
-                ctx.shadowColor = 'rgba(255, 255, 255, 0.9)';
-                ctx.shadowBlur = 12;
+                ctx.moveTo(w.sx, w.sy); ctx.lineTo(w.ex, w.ey);
+                ctx.strokeStyle = `rgba(255, 255, 255, ${w.life})`;
+                ctx.lineWidth = 3;
                 ctx.stroke();
 
-                if (w.life > 0.5) {
-                    w.subStrands.forEach(s => {
-                        ctx.beginPath();
-                        ctx.moveTo(currentX, currentY);
-                        ctx.lineTo(s.endX, s.endY);
-                        ctx.strokeStyle = `rgba(220, 220, 255, ${w.alpha * 0.7})`;
-                        ctx.lineWidth = 1.5;
-                        ctx.stroke();
-                    });
-                }
-
-                if (w.life >= 1) {
-                    drawComplexWebNet(w.endX, w.endY, w.alpha);
-                    w.alpha -= 0.025;
-                }
-
-                if (w.alpha <= 0) {
-                    webs.splice(i, 1);
-                }
+                w.life -= 0.08;
+                if (w.life <= 0) webs.splice(i, 1);
             }
 
-            requestAnimationFrame(animateWebs);
+            for (let i = judgements.length - 1; i >= 0; i--) {
+                const j = judgements[i];
+                ctx.font = `bold ${22 * j.scale}px Segoe UI`;
+                ctx.textAlign = 'center';
+                ctx.fillStyle = j.text === 'PERFECT' ? '#00d9ff' : (j.text === 'GREAT' ? '#00ff88' : '#ff2a2a');
+                ctx.globalAlpha = j.opacity;
+                ctx.fillText(j.text, j.lane * laneWidth + laneWidth / 2, j.y);
+
+                j.y -= 1; j.opacity -= 0.04;
+                if (j.opacity <= 0) judgements.splice(i, 1);
+            }
+            ctx.globalAlpha = 1.0;
+
+            ctx.fillStyle = '#ffffff';
+            ctx.font = 'bold 18px Segoe UI';
+            ctx.textAlign = 'left';
+            ctx.fillText(`SCORE: ${score.toLocaleString()}`, 15, 30);
+            ctx.fillStyle = '#ffcc00';
+            ctx.font = 'bold 14px Segoe UI';
+            ctx.fillText(`LVL ${currentLevel}: ${levelThresholds[currentLevel - 1].name}`, 15, 50);
+
+            ctx.fillStyle = '#ffffff';
+            ctx.font = 'bold 20px Segoe UI';
+            ctx.textAlign = 'right';
+            ctx.fillText(`${combo}x`, canvas.width - 15, 35);
+
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.1)';
+            ctx.fillRect(15, 60, canvas.width - 30, 6);
+            ctx.fillStyle = health > 30 ? '#00d9ff' : '#dc143c';
+            ctx.fillRect(15, 60, (canvas.width - 30) * (health / 100), 6);
+
+            requestAnimationFrame(gameLoop);
         }
-        animateWebs();
 
-        function drawComplexWebNet(x, y, alpha) {
-            const spokes = 8;
-            const rings = 3;
-            const maxRadius = 35;
+        document.getElementById('start_btn').addEventListener('click', loadAndStartGame);
+        document.getElementById('restart-btn').addEventListener('click', loadAndStartGame);
 
-            ctx.save();
-            ctx.strokeStyle = `rgba(255, 255, 255, ${alpha})`;
-            ctx.shadowColor = 'rgba(255, 255, 255, 0.8)';
-            ctx.shadowBlur = 6;
-            ctx.lineWidth = 1.5;
-
-            for (let i = 0; i < spokes; i++) {
-                let angle = (Math.PI * 2 / spokes) * i;
-                ctx.beginPath();
-                ctx.moveTo(x, y);
-                ctx.lineTo(x + Math.cos(angle) * maxRadius, y + Math.sin(angle) * maxRadius);
-                ctx.stroke();
-            }
-
-            for (let r = 1; r <= rings; r++) {
-                let rad = (maxRadius / rings) * r;
-                ctx.beginPath();
-                for (let i = 0; i <= spokes; i++) {
-                    let angle = (Math.PI * 2 / spokes) * i;
-                    let px = x + Math.cos(angle) * rad;
-                    let py = y + Math.sin(angle) * rad;
-                    if (i === 0) ctx.moveTo(px, py);
-                    else ctx.lineTo(px, py);
-                }
-                ctx.stroke();
-            }
-
-            ctx.restore();
-        }
     </script>
 </body>
 
